@@ -3,16 +3,22 @@ from datetime import datetime
 
 URLS = [
     "https://www.merit123.com",
-    "https://www.merit123.com/tr/category/news",
+    "https://www.merit123.com/tr/category/news"
 ]
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; PageVisitBot/1.0)"
+    "User-Agent": "SEO-Bot-Checker/1.0 (GitHubActions)"
 }
 
 for url in URLS:
     try:
         r = requests.get(url, headers=HEADERS, timeout=20)
-        print(f"{datetime.utcnow().isoformat()}Z | {r.status_code} | {url}")
+
+        print("TIME:", datetime.utcnow())
+        print("URL:", url)
+        print("STATUS:", r.status_code)
+        print("CONTENT LENGTH:", len(r.text))
+        print("-" * 40)
+
     except Exception as e:
-        print(f"{datetime.utcnow().isoformat()}Z | ERROR | {url} | {e}")
+        print("ERROR:", url, e)

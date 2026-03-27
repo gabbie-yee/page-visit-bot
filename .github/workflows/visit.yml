@@ -1,4 +1,4 @@
-name: Visit pages with browser
+name: Visit pages (simple)
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -6,32 +6,21 @@ env:
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *" # every hour
+    - cron: "*/30 * * * *" # every 30 min
 
 jobs:
   visit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Playwright
-        run: |
-          pip install playwright
-          python -m playwright install --with-deps chromium
+      - name: Install deps
+        run: pip install requests
 
-      - name: Run browser bot
-        run: python visit_browser.py
-
-      # ✅ Upload screenshot proof
-      - name: Upload screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: browser-proof
-          path: screenshots/
+      - name: Run bot
+        run: python visit.py
