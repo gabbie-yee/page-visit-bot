@@ -1,28 +1,88 @@
-name: Visit pages with browser
+from playwright.sync_api import sync_playwright
+from datetime import datetime
+import os
+import random
+import time
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+URLS = [
+    "https://www.merit123.com",
+    "https://www.merit123.com/tr/category/news"
+]
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 * * * *"
+os.makedirs("screenshots", exist_ok=True)
 
-jobs:
-  visit:
-    runs-on: ubuntu-latest
+def human_delay(min_sec=1, max_sec=3):
+    time.sleep(random.uniform(min_sec, max_sec))
 
-    steps:
-      - uses: actions/checkout@v4
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+    context = browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        viewport={"width": 1280, "height": 800}
+    )
 
-      - name: Install dependencies
-        run: |
-          pip install playwright
-          python -m playwright install --with-deps chromium
+    for i, url in enumerate(URLS):
+        page = context.new_page()   # ✅ new page each loop
 
-      - name: Run browser visit
-        run: python visit_browser.py
+        try:
+            print(f"\n--- Visiting: {url} ---")
+
+            # open page
+            response = page.goto(url, wait_until="domcontentloaded", timeout=60000)
+
+            if response:
+                print("Status:", response.status)
+            else:
+                print("No response object")
+
+            human_delay()
+
+            # wait for page fully loaded
+            page.wait_for_load_state("networkidle")
+
+            # scroll down slowly
+            for _ in range(3):
+                page.mouse.wheel(0, 400)
+                human_delay(0.5, 1.5)
+
+            # scroll up
+            page.mouse.wheel(0, -400)
+            human_delay()
+
+            # print info
+            print("Title:", page.title())
+            print("Current URL:", page.url)
+            print("Time:", datetime.utcnow())
+
+            # ✅ safer click logic
+            try:
+                locator = page.locator("a[href='/tr/category/news']").first
+
+                if locator.is_visible(timeout=3000):
+                    print("Clicking target link...")
+                    locator.click()
+                    page.wait_for_load_state("networkidle")
+                    human_delay()
+
+                    page.screenshot(path=f"screenshots/page_click_{i}.png")
+                    print("Click success")
+
+                else:
+                    print("Link not visible")
+
+            except Exception as e:
+                print(f"Click skipped: {e}")
+
+            # screenshot main page
+            filename = f"screenshots/page_{i}.png"
+            page.screenshot(path=filename)
+            print(f"Screenshot saved: {filename}")
+
+        except Exception as e:
+            print(f"ERROR visiting {url}: {e}")
+
+        finally:
+            page.close()   # ✅ clean up per page
+
+    browser.close()
