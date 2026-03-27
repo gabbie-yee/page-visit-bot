@@ -1,4 +1,4 @@
-name: Visit pages with browser
+name: Visit random pages with browser
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
