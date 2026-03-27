@@ -28,7 +28,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Run browser bot
-        run: python visit_browser.py
+        run: python visit_randombrowser.py
 
       - name: Upload screenshots
         if: always()
