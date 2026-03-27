@@ -5,8 +5,8 @@ env:
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "*/30 * * * *" # every 30 min
+  # schedule:
+  #   - cron: "*/30 * * * *" # every 30 min
 
 jobs:
   visit:
